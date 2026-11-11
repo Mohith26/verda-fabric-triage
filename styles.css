@@ -76,7 +76,7 @@ button{font:inherit}
 .breadcrumbs a{color:var(--color-text-link)}
 .ph{display:flex;justify-content:space-between;gap:var(--spacing-2xl);flex-wrap:wrap;margin-bottom:var(--spacing-2xl)}
 .ph-row{display:flex;align-items:center;gap:var(--spacing-lg);flex-wrap:wrap}
-.ph h2{font-size:var(--font-size-2xl);line-height:2rem;font-weight:600;margin:0;letter-spacing:-.005em}
+.ph h2{font-size:var(--font-size-3xl);line-height:2.5rem;font-weight:600;margin:0;letter-spacing:-.005em}
 .ph-meta{display:flex;align-items:center;gap:var(--spacing-2xs);color:var(--color-text-secondary);font-size:var(--font-size-xs);margin-top:var(--spacing-xs)}
 .ph-meta .svg{width:1rem;height:1rem;color:var(--color-neutral-400)}
 .copyable{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-family-monospace);color:var(--color-text-secondary)}
@@ -141,6 +141,7 @@ table.tbl{border-spacing:0;width:100%;font-size:var(--font-size-xs);line-height:
 .tbl tbody tr.click{cursor:pointer} .tbl tbody tr.click:hover{background:var(--color-surface-hover)}
 .tbl .num{text-align:right;font-variant-numeric:tabular-nums}
 .tbl .badge{line-height:1.25rem}
+.tbl .mono{font-size:var(--font-size-2xs)}
 .tbl.compact td,.tbl.compact th{padding-top:var(--spacing-xs);padding-bottom:var(--spacing-xs)}
 .sort{display:inline-flex;align-items:center;gap:2px}.sort .svg{width:1rem;height:1rem;color:var(--color-icon-default)}
 

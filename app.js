@@ -128,7 +128,7 @@ function viewChecks() {
   return `${subnav('health')}${alert}
   <div class="sec-h"><div><h3>Registered checks</h3><p>One row per check, as in the Grafana “Cluster Active Health Check Overview”. Checks queue behind your jobs and never preempt them.</p></div></div>
   <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Check</th><th>Scope</th><th>Kind</th><th>Scheduler</th><th>Result</th><th>Freshness</th><th>Age</th><th>Last run</th><th></th></tr></thead><tbody>
-  ${rows.map((r) => `<tr><td class="mono" style="font-size:var(--font-size-xs)">${r.check}</td><td>${r.scope}</td><td>${r.kind}</td><td class="mono" style="font-size:var(--font-size-xs)">${r.scheduler}</td><td>${resultBadge(r.result)}</td><td><span class="badge muted">${r.freshness}</span></td><td>${r.age}</td><td>${new Date(r.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}</td><td>${r.check === 'inter-node-nccl' && r.result === 'Degraded' ? `<a class="btn text" href="#/health/triage">Localize</a>` : ''}</td></tr>`).join('')}
+  ${rows.map((r) => `<tr><td class="mono">${r.check}</td><td>${r.scope}</td><td>${r.kind}</td><td class="mono">${r.scheduler}</td><td>${resultBadge(r.result)}</td><td><span class="badge muted">${r.freshness}</span></td><td>${r.age}</td><td>${new Date(r.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}</td><td>${r.check === 'inter-node-nccl' && r.result === 'Degraded' ? `<a class="btn text" href="#/health/triage">Localize</a>` : ''}</td></tr>`).join('')}
   </tbody></table></div>`;
 }
 
@@ -205,9 +205,9 @@ function viewTriage(q) {
   rowsHtml.push(`<tr><td>0</td><td>Registry run</td><td>all 16</td><td>all 8</td><td class="num">—</td><td class="num">${st.obs[0].y.toFixed(1)}</td><td>${ratioCell(st.obs[0].y / st.obs[0].base)}</td><td><span class="badge warn">${ic('warning-filled')}Slow</span></td></tr>`);
   st.rounds.forEach((rd, k) => {
     if (!rd.tests.length) rowsHtml.push(`<tr><td>${k + 1}</td><td colspan="7" class="muted">Waiting: no informative test fits the idle nodes this round</td></tr>`);
-    rd.tests.forEach((t, j) => rowsHtml.push(`<tr><td>${j ? '' : k + 1}</td><td class="mono" style="font-size:var(--font-size-xs)">all_reduce_perf</td><td>${t.nodes.map(shortNode).join(' ')}</td><td class="mono" style="font-size:var(--font-size-xs)">${hcas(t.rails)}</td><td class="num">${t.gain.toFixed(2)}</td><td class="num">${t.y.toFixed(1)}</td><td>${ratioCell(t.y / t.base)}</td><td>${t.y / t.base < 0.95 ? `<span class="badge warn">${ic('warning-filled')}Slow</span>` : `<span class="badge ok">${ic('check-circle')}Normal</span>`}</td></tr>`));
+    rd.tests.forEach((t, j) => rowsHtml.push(`<tr><td>${j ? '' : k + 1}</td><td class="mono">all_reduce_perf</td><td>${t.nodes.map(shortNode).join(' ')}</td><td class="mono">${hcas(t.rails)}</td><td class="num">${t.gain.toFixed(2)}</td><td class="num">${t.y.toFixed(1)}</td><td>${ratioCell(t.y / t.base)}</td><td>${t.y / t.base < 0.95 ? `<span class="badge warn">${ic('warning-filled')}Slow</span>` : `<span class="badge ok">${ic('check-circle')}Normal</span>`}</td></tr>`));
   });
-  preview.forEach((t, j) => rowsHtml.push(`<tr style="background:var(--color-surface-brand)"><td>${j ? '' : st.rounds.length + 1}</td><td class="mono" style="font-size:var(--font-size-xs)">all_reduce_perf</td><td>${t.nodes.map(shortNode).join(' ')}</td><td class="mono" style="font-size:var(--font-size-xs)">${hcas(t.rails)}</td><td class="num">${t.gain.toFixed(2)}</td><td class="num muted">—</td><td class="muted">${T.baseline(t.nodes.length, t.rails).toFixed(1)} GB/s if healthy</td><td><span class="badge info">${ic('info-filled')}Queued</span></td></tr>`));
+  preview.forEach((t, j) => rowsHtml.push(`<tr style="background:var(--color-surface-brand)"><td>${j ? '' : st.rounds.length + 1}</td><td class="mono">all_reduce_perf</td><td>${t.nodes.map(shortNode).join(' ')}</td><td class="mono">${hcas(t.rails)}</td><td class="num">${t.gain.toFixed(2)}</td><td class="num muted">—</td><td class="muted">${T.baseline(t.nodes.length, t.rails).toFixed(1)} GB/s if healthy</td><td><span class="badge info">${ic('info-filled')}Queued</span></td></tr>`));
 
   return `${subnav('health/triage')}
   <div class="sec-h" style="margin-top:0"><div><h3>Fabric triage</h3><p>Triggered by inter-node-nccl (Degraded, ${pct(st.obs[0].ratio - 1)}). Plans the smallest NCCL runs on idle nodes that best separate the remaining explanations, then updates a Bayesian posterior after every round.</p></div>
@@ -260,7 +260,7 @@ function viewNode(n) {
     <div class="tbl-wrap"><table class="tbl"><thead><tr><th>HCA</th><th class="num">Tests</th><th>Worst run</th><th class="num">P(fault)</th><th>Status</th></tr></thead><tbody>${rows}
     <tr><td>node-wide</td><td class="num">${tests.length}</td><td></td><td class="num">${pct(P[idx.get(`node:${n}`)], 2)}</td><td></td></tr></tbody></table></div>
     <div class="tbl-wrap"><table class="tbl compact"><thead><tr><th>Run</th><th>With</th><th>HCAs</th><th class="num">busbw</th><th>vs baseline</th></tr></thead><tbody>
-    ${tests.length ? tests.map(({ o, i }) => `<tr><td>${o.kind === 'trigger' ? 'registry' : '#' + i}</td><td>${o.nodes.length > 4 ? 'all 16' : o.nodes.filter((m) => m !== n).map(shortNode).join(' ')}</td><td class="mono" style="font-size:var(--font-size-xs)">${hcas(o.rails)}</td><td class="num">${o.y.toFixed(1)}</td><td>${ratioCell(o.y / o.base)}</td></tr>`).join('') : `<tr><td colspan="5" class="muted">No tests have used this node yet.</td></tr>`}
+    ${tests.length ? tests.map(({ o, i }) => `<tr><td>${o.kind === 'trigger' ? 'registry' : '#' + i}</td><td>${o.nodes.length > 4 ? 'all 16' : o.nodes.filter((m) => m !== n).map(shortNode).join(' ')}</td><td class="mono">${hcas(o.rails)}</td><td class="num">${o.y.toFixed(1)}</td><td>${ratioCell(o.y / o.base)}</td></tr>`).join('') : `<tr><td colspan="5" class="muted">No tests have used this node yet.</td></tr>`}
     </tbody></table></div>
   </div>`;
 }
@@ -297,13 +297,13 @@ function viewOverview() {
   const st = sim(app.store.preset).st;
   return `<div class="sec-h" style="margin-top:0"><div><h3>Worker nodes</h3><p>${esc(app.data.orchestrator)} · ${app.data.location} · ${app.data.fabric.hcasPerNode}× ${app.data.fabric.hcaGbit} Gbit/s InfiniBand per node, rail-optimized</p></div></div>
   <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Hostname</th><th>Leaf group</th><th>GPUs</th><th>Slurm state</th><th>Job</th></tr></thead><tbody>
-  ${app.cluster.nodes.map((n) => { const d = app.store.drained.includes(n.id); const j = app.data.jobs.find((x) => x.nodes.includes(n.id) && st.rounds.length < x.untilRound); return `<tr class="click" data-href="#/health/node/${n.id + 1}"><td><a href="#/health/node/${n.id + 1}">${n.name}</a></td><td class="mono" style="font-size:var(--font-size-xs)">${T.suName(n.su)}</td><td>8× B200</td><td>${d ? `<span class="badge bg muted">drain</span>` : j ? `<span class="badge bg info">allocated</span>` : `<span class="badge bg ok">idle</span>`}</td><td>${j ? `${j.name} <span class="muted">#${j.id}</span>` : '<span class="muted">—</span>'}</td></tr>`; }).join('')}
+  ${app.cluster.nodes.map((n) => { const d = app.store.drained.includes(n.id); const j = app.data.jobs.find((x) => x.nodes.includes(n.id) && st.rounds.length < x.untilRound); return `<tr class="click" data-href="#/health/node/${n.id + 1}"><td><a href="#/health/node/${n.id + 1}">${n.name}</a></td><td class="mono">${T.suName(n.su)}</td><td>8× B200</td><td>${d ? `<span class="badge bg muted">drain</span>` : j ? `<span class="badge bg info">allocated</span>` : `<span class="badge bg ok">idle</span>`}</td><td>${j ? `${j.name} <span class="muted">#${j.id}</span>` : '<span class="muted">—</span>'}</td></tr>`; }).join('')}
   </tbody></table></div>`;
 }
 function viewStorage() {
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Mounted at</th></tr></thead><tbody>
-  <tr><td>orbit-pretrain-sfs</td><td>Shared filesystem</td><td>30 TB</td><td class="mono" style="font-size:var(--font-size-xs)">/home</td></tr>
-  <tr><td>local NVMe (per worker)</td><td>Local storage</td><td>28 TB</td><td class="mono" style="font-size:var(--font-size-xs)">/mnt/local_disk</td></tr></tbody></table></div>`;
+  <tr><td>orbit-pretrain-sfs</td><td>Shared filesystem</td><td>30 TB</td><td class="mono">/home</td></tr>
+  <tr><td>local NVMe (per worker)</td><td>Local storage</td><td>28 TB</td><td class="mono">/mnt/local_disk</td></tr></tbody></table></div>`;
 }
 function viewActivity() {
   const base = [
@@ -362,7 +362,7 @@ function onAction(btn) {
     download('fabric-triage-backtest.csv', rows.map((r) => r.join(',')).join('\n'), 'text/csv');
   } else if (act === 'drain') {
     const n = +btn.dataset.node; const f = sim(p).st.findings.find((x) => x.h.node === n);
-    const reason = f ? `fabric-triage: ${T.describe(f.h, app.cluster)} at ${(f.sev.mean * 100).toFixed(0)}% line rate, p=${f.prob.toFixed(3)}` : 'fabric-triage: manual drain';
+    const reason = f ? `fabric-triage: ${T.describe(f.h, app.cluster)} at ${(f.sev.mean * 100).toFixed(0)}% line rate, p=${f.prob >= 0.9995 ? '>0.999' : f.prob.toFixed(3)}` : 'fabric-triage: manual drain';
     dialog(`Drain ${nodeName(n)}?`, 'Running jobs finish; Slurm stops scheduling new work on this node. You can resume it from the jump host at any time.', `scontrol update NodeName=${nodeName(n)} State=DRAIN Reason="${reason}"`, 'Drain node', true, () => {
       if (!app.store.drained.includes(n)) app.store.drained.push(n);
       app.store.activity.unshift({ t: stamp(), e: `Node drained: ${nodeName(n)}`, c: 'info', who: 'Demo User', res: 'Cluster node' });
