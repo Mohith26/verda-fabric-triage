@@ -127,8 +127,8 @@ function viewChecks() {
     : `<div class="alert">${ic('warning-filled')}<div class="grow"><b>inter-node-nccl reported Degraded ${fmtAgo(rows.find((r) => r.check === 'inter-node-nccl').lastRun)}</b><p>16-node AllReduce bus bandwidth ${tr.y.toFixed(1)} GB/s vs ${tr.base.toFixed(1)} GB/s baseline (${pct(tr.ratio - 1)}). Intra-node checks are Healthy, so the slowdown is on the InfiniBand fabric. The full-cluster check cannot say which HCA, cable or uplink.</p></div><a class="btn primary has-end" href="#/health/triage">${done ? 'View triage' : 'Localize fault'}${ic('arrow-forward')}</a></div>`;
   return `${subnav('health')}${alert}
   <div class="sec-h"><div><h3>Registered checks</h3><p>One row per check, as in the Grafana “Cluster Active Health Check Overview”. Checks queue behind your jobs and never preempt them.</p></div></div>
-  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Check</th><th>Scope</th><th>Kind</th><th>Scheduler</th><th>Result</th><th>Freshness</th><th>Age</th><th>Last run</th><th></th></tr></thead><tbody>
-  ${rows.map((r) => `<tr><td class="mono">${r.check}</td><td>${r.scope}</td><td>${r.kind}</td><td class="mono">${r.scheduler}</td><td>${resultBadge(r.result)}</td><td><span class="badge muted">${r.freshness}</span></td><td>${r.age}</td><td>${new Date(r.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}</td><td>${r.check === 'inter-node-nccl' && r.result === 'Degraded' ? `<a class="btn text" href="#/health/triage">Localize</a>` : ''}</td></tr>`).join('')}
+  <div class="tbl-wrap"><table class="tbl sortable"><thead><tr>${['Check', 'Scope', 'Kind', 'Scheduler', 'Result', 'Freshness', 'Age', 'Last run'].map((h) => `<th data-s tabindex="0"><span class="sort">${h}${ic('sort')}</span></th>`).join('')}<th></th></tr></thead><tbody>
+  ${rows.map((r) => `<tr><td class="mono">${r.check}</td><td>${r.scope}</td><td>${r.kind}</td><td class="mono">${r.scheduler}</td><td>${resultBadge(r.result)}</td><td><span class="badge muted">${r.freshness}</span></td><td data-v="${Date.parse('2026-11-11T06:00:00Z') - Date.parse(r.lastRun)}">${r.age}</td><td data-v="${Date.parse(r.lastRun)}">${new Date(r.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}</td><td>${r.check === 'inter-node-nccl' && r.result === 'Degraded' ? `<a class="btn text" href="#/health/triage">Localize</a>` : ''}</td></tr>`).join('')}
   </tbody></table></div>`;
 }
 
@@ -182,12 +182,18 @@ function viewTriage(q) {
   if (q.get('preset') && app.data.presets.some((p) => p.id === q.get('preset')) && q.get('preset') !== app.store.preset) { app.store.preset = q.get('preset'); save(); }
   const s = sim(app.store.preset);
   const st = s.st, cl = app.cluster;
-  const top = T.topHypotheses(st, 6);
+  const top = T.topHypotheses(st, 6).filter((x, i) => i < 2 || x.p >= 1e-4);
   const nodeMin = st.rounds.reduce((a, rd) => a + rd.tests.reduce((b, t) => b + T.gpuShare(t) * T.TEST_MIN, 0), 0);
   const idleNow = idleAt(st.rounds.length);
   const running = st.status === 'running';
   const preview = running ? T.planRound(st, idleNow) : [];
   const lead = top[0];
+  // posterior mass that no idle test can reach (every node it lives on is busy)
+  const P = T.marginals(st);
+  let blocked = 0; const blockedNodes = new Set();
+  st.hyps.forEach((h, i) => {
+    if (h.kind === 'path' || h.kind === 'node') { if (!idleNow.has(h.node)) { blocked += P[i]; if (P[i] > 1e-4) blockedNodes.add(h.node); } }
+  });
   const sevTxt = (i) => { const sv = T.severityPosterior(st, i); return `${pct(sv.mean, 0)} of line rate (90%: ${pct(sv.lo, 0)}–${pct(sv.hi, 0)})`; };
   const kpi = (label, v, sub) => `<div class="card kpi"><label>${label}</label><div class="v">${v}</div><div class="sub">${sub}</div></div>`;
   const statusTxt = { running: 'Localizing', localized: 'Localized', clear: 'No persistent fault', inconclusive: 'Inconclusive' }[st.status];
@@ -204,7 +210,7 @@ function viewTriage(q) {
   const rowsHtml = [];
   rowsHtml.push(`<tr><td>0</td><td>Registry run</td><td>all 16</td><td>all 8</td><td class="num">—</td><td class="num">${st.obs[0].y.toFixed(1)}</td><td>${ratioCell(st.obs[0].y / st.obs[0].base)}</td><td><span class="badge warn">${ic('warning-filled')}Slow</span></td></tr>`);
   st.rounds.forEach((rd, k) => {
-    if (!rd.tests.length) rowsHtml.push(`<tr><td>${k + 1}</td><td colspan="7" class="muted">Waiting: no informative test fits the idle nodes this round</td></tr>`);
+    if (!rd.tests.length) rowsHtml.push(`<tr><td>${k + 1}</td><td colspan="7" class="muted">Waiting: the remaining suspects sit on nodes held by running jobs; nothing informative fits the idle nodes this round</td></tr>`);
     rd.tests.forEach((t, j) => rowsHtml.push(`<tr><td>${j ? '' : k + 1}</td><td class="mono">all_reduce_perf</td><td>${t.nodes.map(shortNode).join(' ')}</td><td class="mono">${hcas(t.rails)}</td><td class="num">${t.gain.toFixed(2)}</td><td class="num">${t.y.toFixed(1)}</td><td>${ratioCell(t.y / t.base)}</td><td>${t.y / t.base < 0.95 ? `<span class="badge warn">${ic('warning-filled')}Slow</span>` : `<span class="badge ok">${ic('check-circle')}Normal</span>`}</td></tr>`));
   });
   preview.forEach((t, j) => rowsHtml.push(`<tr style="background:var(--color-surface-brand)"><td>${j ? '' : st.rounds.length + 1}</td><td class="mono">all_reduce_perf</td><td>${t.nodes.map(shortNode).join(' ')}</td><td class="mono">${hcas(t.rails)}</td><td class="num">${t.gain.toFixed(2)}</td><td class="num muted">—</td><td class="muted">${T.baseline(t.nodes.length, t.rails).toFixed(1)} GB/s if healthy</td><td><span class="badge info">${ic('info-filled')}Queued</span></td></tr>`));
@@ -217,7 +223,7 @@ function viewTriage(q) {
     <button class="btn primary has-start" data-act="next" ${running ? '' : 'disabled'} aria-keyshortcuts="n" title="Shortcut: N">${ic('play')}Run next round</button></div></div>
   ${verdict}
   <div class="kpis">
-    ${kpi('Status', statusTxt, running ? `${preview.length} test${preview.length === 1 ? '' : 's'} queued for round ${st.rounds.length + 1}` : `after ${st.rounds.length} round${st.rounds.length === 1 ? '' : 's'}`)}
+    ${kpi('Status', statusTxt, running ? (preview.length ? `${preview.length} test${preview.length === 1 ? '' : 's'} queued for round ${st.rounds.length + 1}` : `Waiting: ${pct(blocked, 0)} of the posterior is on busy nodes ${[...blockedNodes].map(shortNode).join(' ')}`) : `after ${st.rounds.length} round${st.rounds.length === 1 ? '' : 's'}`)}
     ${kpi('Leading explanation', `${prob(lead.p)}`, esc(lead.h.kind === 'none' ? (findings.length ? 'Nothing beyond the localized fault' : 'Transient (no persistent fault)') : T.describe(lead.h, cl)))}
     ${kpi('Tests run', `${st.rounds.reduce((a, r) => a + r.tests.length, 0)} <small>in ${st.rounds.length} rounds</small>`, `${nodeMin.toFixed(1)} node-minutes of idle capacity`)}
     ${kpi('Idle nodes now', `${idleNow.size}<small> / 16</small>`, app.data.jobs.filter((j) => st.rounds.length < j.untilRound).map((j) => `${j.name} holds ${j.nodes.length}`).join(' · ') || 'All jobs finished')}
@@ -269,7 +275,7 @@ function viewNode(n) {
 function viewMethod() {
   const R = app.results;
   const names = { adaptive: 'Fabric triage (this feature)', bisection: 'Threshold bisection', pairwise: 'All-pairs sweep' };
-  const tbl = (set, title, note) => `<div class="sec-h"><div><h3>${title}</h3><p>${note}</p></div></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Method</th><th class="num">Exact component</th><th class="num">Right node or leaf</th><th class="num">Rounds p50</th><th class="num">Rounds p90</th><th class="num">Node-min p50</th><th class="num">Silent faults</th><th class="num">Leaf uplinks</th></tr></thead><tbody>${Object.entries(set).map(([m, v]) => `<tr class="${m === 'adaptive' ? 'sel' : ''}"><td>${names[m]}</td><td class="num"><b>${pct(v.exact)}</b></td><td class="num">${pct(v.node)}</td><td class="num">${v.roundsMedian}</td><td class="num">${v.roundsP90.toFixed(0)}</td><td class="num">${v.nodeMinMedian.toFixed(1)}</td><td class="num">${pct(v.byKind.silent.exact)}</td><td class="num">${pct(v.byKind.uplink.exact)}</td></tr>`).join('')}</tbody></table></div>`;
+  const tbl = (set, title, note) => `<div class="sec-h"><div><h3>${title}</h3><p>${note}</p></div></div><div class="tbl-wrap"><table class="tbl sortable"><thead><tr><th data-s tabindex="0"><span class="sort">Method${ic('sort')}</span></th>${['Exact component', 'Right node or leaf', 'Rounds p50', 'Rounds p90', 'Node-min p50', 'Silent faults', 'Leaf uplinks'].map((h) => `<th class="num" data-s tabindex="0"><span class="sort">${h}${ic('sort')}</span></th>`).join('')}</tr></thead><tbody>${Object.entries(set).map(([m, v]) => `<tr class="${m === 'adaptive' ? 'sel' : ''}"><td>${names[m]}</td><td class="num"><b>${pct(v.exact)}</b></td><td class="num">${pct(v.node)}</td><td class="num">${v.roundsMedian}</td><td class="num">${v.roundsP90.toFixed(0)}</td><td class="num">${v.nodeMinMedian.toFixed(1)}</td><td class="num">${pct(v.byKind.silent.exact)}</td><td class="num">${pct(v.byKind.uplink.exact)}</td></tr>`).join('')}</tbody></table></div>`;
   const a = R.idle.adaptive;
   return `${subnav('health/method')}
   <div class="two how">
@@ -402,7 +408,18 @@ function render() {
   document.title = `${app.data.hostname} · ${tab === 'health' ? 'Health' : tab[0].toUpperCase() + tab.slice(1)} · Verda`;
 }
 
+function sortTable(th) {
+  const table = th.closest('table'); const idx = [...th.parentNode.children].indexOf(th);
+  const dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+  th.parentNode.querySelectorAll('th').forEach((x) => { delete x.dataset.dir; x.removeAttribute('aria-sort'); });
+  th.dataset.dir = dir; th.setAttribute('aria-sort', dir === 'asc' ? 'ascending' : 'descending');
+  const key = (tr) => { const cell = tr.children[idx]; if (cell?.dataset.v) return +cell.dataset.v; const t = cell?.textContent.trim() ?? ''; const n = parseFloat(t.replace(/[^0-9.\-]/g, '')); return /^[>\-]?[0-9.,]+\s*(%|m|h|s|GB)?/.test(t) && !Number.isNaN(n) ? n : t.toLowerCase(); };
+  const rows = [...table.tBodies[0].rows];
+  rows.sort((a, b) => { const x = key(a), y = key(b); const c = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y)); return dir === 'asc' ? c : -c; });
+  rows.forEach((r) => table.tBodies[0].appendChild(r));
+}
 document.addEventListener('click', (e) => {
+  const th = e.target.closest('table.sortable th[data-s]'); if (th) { sortTable(th); return; }
   const b = e.target.closest('[data-act]'); if (b && !b.disabled) { onAction(b); return; }
   const c = e.target.closest('[data-copy]'); if (c) { navigator.clipboard?.writeText(c.dataset.copy).catch(() => {}); toast('ID copied'); return; }
   const cell = e.target.closest('.cell'); if (cell && cell.dataset.node !== '') { location.hash = `#/health/node/${+cell.dataset.node + 1}`; return; }
@@ -410,6 +427,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('change', (e) => { if (e.target.id === 'preset') { location.hash = `#/health/triage?preset=${e.target.value}`; } });
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.matches && e.target.matches('th[data-s]')) { sortTable(e.target); return; }
   if (e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey || $('.dlg-back')) { if (e.key === 'Escape') $('.dlg-back')?.remove(); return; }
   if (!location.hash.includes('triage')) return;
   if (e.key === 'n') $('[data-act=next]:not([disabled])')?.click();
