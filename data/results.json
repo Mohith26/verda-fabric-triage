@@ -1,0 +1,285 @@
+{
+ "generated": "node scripts/generate.mjs (seeded; deterministic)",
+ "scenarios": {
+  "idle": 1000,
+  "busy": 500,
+  "flaky": 500
+ },
+ "assumptions": {
+  "nodes": 16,
+  "hcasPerNode": 8,
+  "leafGroups": 4,
+  "testMinutes": 1,
+  "cvAllRails": 0.012,
+  "cvOneRail": 0.018,
+  "transientRate": 0.03,
+  "degradedRatio": 0.95,
+  "confidence": 0.99,
+  "bisectionThreshold": 0.93
+ },
+ "idle": {
+  "adaptive": {
+   "n": 1000,
+   "exact": 0.998,
+   "node": 1,
+   "roundsMedian": 5,
+   "roundsP90": 8,
+   "nodeMinMedian": 40.25,
+   "nodeMinMean": 40.18275,
+   "testsMedian": 39,
+   "byKind": {
+    "path": {
+     "n": 501,
+     "exact": 1
+    },
+    "node": {
+     "n": 145,
+     "exact": 1
+    },
+    "uplink": {
+     "n": 198,
+     "exact": 1
+    },
+    "none": {
+     "n": 97,
+     "exact": 1
+    },
+    "double": {
+     "n": 59,
+     "exact": 0.9661016949152542
+    },
+    "silent": {
+     "n": 203,
+     "exact": 1
+    }
+   },
+   "confidentShare": 1,
+   "exactWhenConfident": 0.998
+  },
+  "bisection": {
+   "n": 1000,
+   "exact": 0.792,
+   "node": 0.883,
+   "roundsMedian": 7,
+   "roundsP90": 7,
+   "nodeMinMedian": 26.75,
+   "nodeMinMean": 28.047,
+   "testsMedian": 12,
+   "byKind": {
+    "path": {
+     "n": 501,
+     "exact": 0.8003992015968064
+    },
+    "node": {
+     "n": 145,
+     "exact": 0.8689655172413793
+    },
+    "uplink": {
+     "n": 198,
+     "exact": 0.8636363636363636
+    },
+    "none": {
+     "n": 97,
+     "exact": 0.8247422680412371
+    },
+    "double": {
+     "n": 59,
+     "exact": 0.23728813559322035
+    },
+    "silent": {
+     "n": 203,
+     "exact": 0.6600985221674877
+    }
+   }
+  },
+  "pairwise": {
+   "n": 1000,
+   "exact": 0.946,
+   "node": 1,
+   "roundsMedian": 16,
+   "roundsP90": 16,
+   "nodeMinMedian": 242,
+   "nodeMinMean": 241.806,
+   "testsMedian": 128,
+   "byKind": {
+    "path": {
+     "n": 501,
+     "exact": 0.9840319361277445
+    },
+    "node": {
+     "n": 145,
+     "exact": 1
+    },
+    "uplink": {
+     "n": 198,
+     "exact": 0.9696969696969697
+    },
+    "none": {
+     "n": 97,
+     "exact": 1
+    },
+    "double": {
+     "n": 59,
+     "exact": 0.3220338983050847
+    },
+    "silent": {
+     "n": 203,
+     "exact": 0.9359605911330049
+    }
+   }
+  }
+ },
+ "busy": {
+  "adaptive": {
+   "n": 500,
+   "exact": 0.994,
+   "node": 1,
+   "roundsMedian": 17,
+   "roundsP90": 30,
+   "nodeMinMedian": 38.25,
+   "nodeMinMean": 38.4005,
+   "testsMedian": 34,
+   "byKind": {
+    "path": {
+     "n": 246,
+     "exact": 0.991869918699187
+    },
+    "node": {
+     "n": 67,
+     "exact": 1
+    },
+    "uplink": {
+     "n": 97,
+     "exact": 1
+    },
+    "none": {
+     "n": 60,
+     "exact": 1
+    },
+    "double": {
+     "n": 30,
+     "exact": 0.9666666666666667
+    },
+    "silent": {
+     "n": 106,
+     "exact": 0.9905660377358491
+    }
+   },
+   "confidentShare": 0.972,
+   "exactWhenConfident": 0.9979423868312757
+  },
+  "bisection": {
+   "n": 500,
+   "exact": 0.418,
+   "node": 0.44,
+   "roundsMedian": 60,
+   "roundsP90": 60,
+   "nodeMinMedian": 26,
+   "nodeMinMean": 24.072,
+   "testsMedian": 9,
+   "byKind": {
+    "path": {
+     "n": 246,
+     "exact": 0.44715447154471544
+    },
+    "node": {
+     "n": 67,
+     "exact": 0.5223880597014925
+    },
+    "uplink": {
+     "n": 97,
+     "exact": 0.061855670103092786
+    },
+    "none": {
+     "n": 60,
+     "exact": 0.9666666666666667
+    },
+    "double": {
+     "n": 30,
+     "exact": 0
+    },
+    "silent": {
+     "n": 106,
+     "exact": 0.2358490566037736
+    }
+   }
+  },
+  "pairwise": {
+   "n": 500,
+   "exact": 0.29,
+   "node": 1,
+   "roundsMedian": 60,
+   "roundsP90": 60,
+   "nodeMinMedian": 228,
+   "nodeMinMean": 226.024,
+   "testsMedian": 114,
+   "byKind": {
+    "path": {
+     "n": 246,
+     "exact": 0
+    },
+    "node": {
+     "n": 67,
+     "exact": 1
+    },
+    "uplink": {
+     "n": 97,
+     "exact": 0.13402061855670103
+    },
+    "none": {
+     "n": 60,
+     "exact": 1
+    },
+    "double": {
+     "n": 30,
+     "exact": 0.16666666666666666
+    },
+    "silent": {
+     "n": 106,
+     "exact": 0.1509433962264151
+    }
+   }
+  }
+ },
+ "flaky": {
+  "adaptive": {
+   "n": 500,
+   "exact": 0.992,
+   "node": 1,
+   "roundsMedian": 6,
+   "roundsP90": 9,
+   "nodeMinMedian": 43.375,
+   "nodeMinMean": 44.0415,
+   "testsMedian": 43,
+   "byKind": {
+    "path": {
+     "n": 271,
+     "exact": 0.988929889298893
+    },
+    "node": {
+     "n": 73,
+     "exact": 0.9863013698630136
+    },
+    "uplink": {
+     "n": 77,
+     "exact": 1
+    },
+    "none": {
+     "n": 50,
+     "exact": 1
+    },
+    "double": {
+     "n": 29,
+     "exact": 1
+    },
+    "silent": {
+     "n": 87,
+     "exact": 1
+    }
+   },
+   "confidentShare": 1,
+   "exactWhenConfident": 0.992
+  }
+ },
+ "seconds": 158
+}

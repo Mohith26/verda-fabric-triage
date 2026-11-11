@@ -1,0 +1,459 @@
+{
+ "id": "6f1c2a9e-4b7d-4e15-9a3c-2d8e0f7b51c4",
+ "hostname": "orbit-pretrain",
+ "model": "128× B200 SXM6",
+ "template": "128B200",
+ "status": "running",
+ "created_at": "2026-10-28T09:12:00Z",
+ "ip": "135.181.40.17",
+ "location": "FIN-03",
+ "orchestrator": "Slinky (Slurm on Kubernetes)",
+ "fabric": {
+  "hcasPerNode": 8,
+  "hcaGbit": 400,
+  "leafGroups": 4,
+  "nodesPerLeaf": 4,
+  "note": "rail-optimized: one leaf per rail per group of 4 nodes, spine above"
+ },
+ "nodes": [
+  {
+   "id": 0,
+   "name": "orbit-pretrain-01",
+   "su": 0
+  },
+  {
+   "id": 1,
+   "name": "orbit-pretrain-02",
+   "su": 0
+  },
+  {
+   "id": 2,
+   "name": "orbit-pretrain-03",
+   "su": 0
+  },
+  {
+   "id": 3,
+   "name": "orbit-pretrain-04",
+   "su": 0
+  },
+  {
+   "id": 4,
+   "name": "orbit-pretrain-05",
+   "su": 1
+  },
+  {
+   "id": 5,
+   "name": "orbit-pretrain-06",
+   "su": 1
+  },
+  {
+   "id": 6,
+   "name": "orbit-pretrain-07",
+   "su": 1
+  },
+  {
+   "id": 7,
+   "name": "orbit-pretrain-08",
+   "su": 1
+  },
+  {
+   "id": 8,
+   "name": "orbit-pretrain-09",
+   "su": 2
+  },
+  {
+   "id": 9,
+   "name": "orbit-pretrain-10",
+   "su": 2
+  },
+  {
+   "id": 10,
+   "name": "orbit-pretrain-11",
+   "su": 2
+  },
+  {
+   "id": 11,
+   "name": "orbit-pretrain-12",
+   "su": 2
+  },
+  {
+   "id": 12,
+   "name": "orbit-pretrain-13",
+   "su": 3
+  },
+  {
+   "id": 13,
+   "name": "orbit-pretrain-14",
+   "su": 3
+  },
+  {
+   "id": 14,
+   "name": "orbit-pretrain-15",
+   "su": 3
+  },
+  {
+   "id": 15,
+   "name": "orbit-pretrain-16",
+   "su": 3
+  }
+ ],
+ "jobs": [
+  {
+   "id": 41827,
+   "name": "sft-llama-70b",
+   "user": "mkoskinen",
+   "nodes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "start": "2026-11-10T20:48:00.000Z",
+   "state": "RUNNING",
+   "untilRound": 5
+  },
+  {
+   "id": 41833,
+   "name": "eval-harness",
+   "user": "jlaine",
+   "nodes": [
+    10,
+    11
+   ],
+   "start": "2026-11-11T04:36:00.000Z",
+   "state": "RUNNING",
+   "untilRound": 2
+  }
+ ],
+ "registry": [
+  {
+   "check": "active-node-suite",
+   "scope": "Node",
+   "kind": "Owning",
+   "scheduler": "slurm",
+   "result": "Healthy",
+   "freshness": "Fresh",
+   "age": "2h 11m",
+   "lastRun": "2026-11-11T03:49:12.000Z"
+  },
+  {
+   "check": "passive-node-suite",
+   "scope": "Node",
+   "kind": "Observing",
+   "scheduler": "slurm",
+   "result": "Healthy",
+   "freshness": "Fresh",
+   "age": "1m",
+   "lastRun": "2026-11-11T05:58:48.000Z"
+  },
+  {
+   "check": "gpud-node-agent",
+   "scope": "Node",
+   "kind": "Observing",
+   "scheduler": "slurm",
+   "result": "Healthy",
+   "freshness": "Fresh",
+   "age": "1m",
+   "lastRun": "2026-11-11T05:58:48.000Z"
+  },
+  {
+   "check": "dcgm-exporter",
+   "scope": "Node",
+   "kind": "Observing",
+   "scheduler": "slurm",
+   "result": "Healthy",
+   "freshness": "Fresh",
+   "age": "30s",
+   "lastRun": "2026-11-11T05:59:24.000Z"
+  },
+  {
+   "check": "inter-node-nccl",
+   "scope": "Fleet",
+   "kind": "Owning",
+   "scheduler": "slurm",
+   "result": "Degraded",
+   "freshness": "Fresh",
+   "age": "38m",
+   "lastRun": "2026-11-11T05:22:12.000Z"
+  },
+  {
+   "check": "prolog-epilog-job-checks",
+   "scope": "Node",
+   "kind": "Owning",
+   "scheduler": "slurm",
+   "result": "Healthy",
+   "freshness": "Fresh",
+   "age": "1h 02m",
+   "lastRun": "2026-11-11T04:58:12.000Z"
+  },
+  {
+   "check": "weekly-training-benchmark",
+   "scope": "Fleet",
+   "kind": "Owning",
+   "scheduler": "slurm",
+   "result": "Healthy",
+   "freshness": "Fresh",
+   "age": "3d 4h",
+   "lastRun": "2026-11-08T02:00:00.000Z"
+  },
+  {
+   "check": "weekly-io-benchmark",
+   "scope": "Node",
+   "kind": "Owning",
+   "scheduler": "slurm",
+   "result": "Healthy",
+   "freshness": "Fresh",
+   "age": "2d 19h",
+   "lastRun": "2026-11-08T11:00:00.000Z"
+  }
+ ],
+ "presets": [
+  {
+   "id": "silent-hca",
+   "label": "Silent HCA slowdown",
+   "seed": 11,
+   "faults": [
+    {
+     "h": {
+      "kind": "path",
+      "node": 6,
+      "rail": 3,
+      "id": "path:6:3"
+     },
+     "s": 0.88
+    }
+   ],
+   "trigger": {
+    "nodes": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "rails": null,
+    "base": 364.5184,
+    "y": 316.4,
+    "ratio": 0.8679895393695043,
+    "kind": "trigger"
+   }
+  },
+  {
+   "id": "half-rate",
+   "label": "Link trained at half rate",
+   "seed": 21,
+   "faults": [
+    {
+     "h": {
+      "kind": "path",
+      "node": 12,
+      "rail": 5,
+      "id": "path:12:5"
+     },
+     "s": 0.5
+    }
+   ],
+   "trigger": {
+    "nodes": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "rails": null,
+    "base": 364.5184,
+    "y": 179.6,
+    "ratio": 0.4926557688241671,
+    "kind": "trigger"
+   }
+  },
+  {
+   "id": "leaf-uplink",
+   "label": "Leaf uplink degraded",
+   "seed": 31,
+   "faults": [
+    {
+     "h": {
+      "kind": "uplink",
+      "su": 2,
+      "rail": 6,
+      "id": "uplink:2:6"
+     },
+     "s": 0.72
+    }
+   ],
+   "trigger": {
+    "nodes": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "rails": null,
+    "base": 364.5184,
+    "y": 263.9,
+    "ratio": 0.7239589148264592,
+    "kind": "trigger"
+   }
+  },
+  {
+   "id": "node-wide",
+   "label": "Node-wide (PCIe / NUMA)",
+   "seed": 41,
+   "faults": [
+    {
+     "h": {
+      "kind": "node",
+      "node": 9,
+      "id": "node:9"
+     },
+     "s": 0.81
+    }
+   ],
+   "trigger": {
+    "nodes": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "rails": null,
+    "base": 364.5184,
+    "y": 293.3,
+    "ratio": 0.8044873223806346,
+    "kind": "trigger"
+   }
+  },
+  {
+   "id": "transient",
+   "label": "False alarm (transient congestion)",
+   "seed": 51,
+   "faults": [],
+   "transient": true,
+   "trigger": {
+    "nodes": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "rails": null,
+    "base": 364.5184,
+    "y": 292.1,
+    "ratio": 0.8013205046000932,
+    "kind": "trigger"
+   }
+  },
+  {
+   "id": "two-faults",
+   "label": "Two faults at once",
+   "seed": 61,
+   "faults": [
+    {
+     "h": {
+      "kind": "path",
+      "node": 2,
+      "rail": 0,
+      "id": "path:2:0"
+     },
+     "s": 0.66
+    },
+    {
+     "h": {
+      "kind": "path",
+      "node": 14,
+      "rail": 7,
+      "id": "path:14:7"
+     },
+     "s": 0.9
+    }
+   ],
+   "trigger": {
+    "nodes": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "rails": null,
+    "base": 364.5184,
+    "y": 239.8,
+    "ratio": 0.6577500609050149,
+    "kind": "trigger"
+   }
+  }
+ ]
+}
